@@ -5,16 +5,19 @@
    "license": "MIT",
    "dependencies": {
       "@types/node": "^18.15.11",
-      "mysql": "^2.18.1",
-      "reflect-metadata": "^0.1.13",
-      "typeorm": "0.3.14",
-      "pg": "^8.4.0",
+      "@types/node-cron": "^3.0.7",
+      "body-parser": "^1.19.1",
+      "dotenv": "^16.0.3",
       "express": "^4.17.2",
-      "body-parser": "^1.19.1"
+      "mysql": "^2.18.1",
+      "node-cron": "^3.0.2",
+      "pg": "^8.4.0",
+      "reflect-metadata": "^0.1.13",
+      "typeorm": "0.3.14"
    },
    "devDependencies": {
-      "ts-node": "10.7.0",
       "@types/node": "^16.11.10",
+      "ts-node": "10.7.0",
       "typescript": "4.5.2"
    },
    "scripts": {
