@@ -1,26 +1,36 @@
 import { Request, Response } from "express";
-import { Repository } from "typeorm";
-import Game from "entity/Game";
-import { AppDataSource } from "data-source";
+import { Repository, In } from "typeorm";
+import { AppDataSource } from "../data-source";
+import Game from "../entity/Game";
 
 export default class GameController {
   private gameRepository: Repository<Game> = AppDataSource.getRepository(Game);
+
+  constructor() {}
 
   async saveGames(games: Game[]): Promise<void> {
     try {
       await this.gameRepository.save(games);
     } catch (e) {
-      console.log(e.message);
+      console.log(e);
     }
   }
 
-  async getGames(req: Request, res: Response): Promise<void> {
+  async getGames(ids?: number[]): Promise<Game[]> {
     try {
-      const games = await this.gameRepository.find();
-
-      res.json(games);
+      if (ids) {
+        return await this.gameRepository.find({ where: { id: In(ids) } });
+      } else {
+        return await this.gameRepository.find();
+      }
     } catch (e) {
-      console.log(e.message);
+      throw e;
     }
+  }
+
+  async handleGetGames(req: Request, res: Response): Promise<void> {
+    const games = await this.getGames();
+
+    res.json(games);
   }
 }
