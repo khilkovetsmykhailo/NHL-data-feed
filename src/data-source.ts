@@ -3,6 +3,7 @@ import { DataSource } from "typeorm";
 import * as dotenv from "dotenv";
 import Player from "./entity/Player";
 import Game from "./entity/Game";
+import GamePlayer from "./entity/GamePlayer";
 
 dotenv.config();
 
@@ -15,7 +16,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || "test",
   synchronize: true,
   logging: false,
-  entities: [Player, Game],
+  entities: [Player, Game, GamePlayer],
   migrations: [__dirname + "/migration/**/*.ts"],
   subscribers: [],
 });

@@ -1,6 +1,7 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import GamePlayer from "./GamePlayer";
 
-@Entity()
+@Entity("Game")
 export default class Game {
   @PrimaryColumn()
   id: number;
@@ -10,4 +11,7 @@ export default class Game {
 
   @Column({ enum: ["Preview", "Live", "Final"] })
   state: string;
+
+  @OneToMany(() => GamePlayer, (gamePlayer) => gamePlayer.game, { nullable: true })
+  gameInfos: GamePlayer[];
 }
