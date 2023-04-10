@@ -1,7 +1,8 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { User } from "./entity/Player";
 import * as dotenv from "dotenv";
+import Player from "./entity/Player";
+import Game from "./entity/Game";
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || "test",
   synchronize: true,
   logging: false,
-  entities: [User],
-  migrations: [],
+  entities: [Player, Game],
+  migrations: [__dirname + "/migration/**/*.ts"],
   subscribers: [],
 });

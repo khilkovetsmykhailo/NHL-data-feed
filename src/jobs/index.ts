@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import { appendFileSync, writeFileSync } from "fs";
+import { appendFileSync } from "fs";
 
 export default class NHLCronManager {
   private jobs: { [key: string]: CronJob } = {};
