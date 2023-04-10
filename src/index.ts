@@ -4,13 +4,18 @@ import { Request, Response } from "express";
 import { AppDataSource } from "./data-source";
 import { Routes } from "./routes";
 import * as dotenv from "dotenv";
+import NHLCronManager from "./jobs";
 
 dotenv.config();
 
 const port = process.env.PORT || 3000;
 
+const nhlJobManager = new NHLCronManager();
+
 AppDataSource.initialize()
   .then(async () => {
+    nhlJobManager.start();
+
     // create express app
     const app = express();
     app.use(bodyParser.json());
