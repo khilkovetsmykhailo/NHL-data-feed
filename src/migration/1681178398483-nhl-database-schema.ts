@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class ModifySomeSchema1681178002235 implements MigrationInterface {
-    name = 'ModifySomeSchema1681178002235'
+export class NhlDatabaseSchema1681178398483 implements MigrationInterface {
+    name = 'NhlDatabaseSchema1681178398483'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "Game" ("id" integer NOT NULL, "date" TIMESTAMP, "state" character varying NOT NULL, CONSTRAINT "PK_cce0ee17147c1830d09c19d4d56" PRIMARY KEY ("id"))`);
