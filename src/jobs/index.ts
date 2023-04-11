@@ -45,17 +45,16 @@ export default class NHLCronManager {
 
       for (let game of games) {
         const currentState = game.state;
-
-        if (prevGames[game.id] && prevGames[game.id].state === currentState) {
-          continue;
-        }
-
         const jobName = `ingest-${game.id}`;
 
         if (currentState === "Live" && !this.jobs[jobName]) {
           this.addJob(jobName, "*/10 * * * * *", this.ingestGame.bind(this, game.id)); // Tried to check every second but looked like there was rate limit
           this.jobs[jobName].start();
           appendFileSync("output.log", `Game ${game.id} has started` + "\n");
+        }
+
+        if (prevGames[game.id] && prevGames[game.id].state === currentState) {
+          continue;
         } else if (currentState === "Final" && this.jobs[jobName]) {
           this.removeJob(jobName);
           appendFileSync("output.log", `Game ${game.id} has finished` + "\n");
@@ -64,7 +63,7 @@ export default class NHLCronManager {
 
       await this.gameController.saveGames(games);
     } catch (e) {
-      appendFileSync("output.log", `Monitoring schedule failed:` + (e as Error).message);
+      appendFileSync("output.log", `Monitoring schedule failed:` + (e as Error).message + "\n");
     }
   }
 

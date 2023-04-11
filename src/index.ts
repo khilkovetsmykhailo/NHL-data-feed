@@ -32,6 +32,10 @@ AppDataSource.initialize()
       });
     });
 
+    app.get("/jobs", (req, res) => {
+      res.json(nhlJobManager.listJobs());
+    });
+
     app.listen(port);
 
     console.log(`Express server has started on port ${port}.`);
