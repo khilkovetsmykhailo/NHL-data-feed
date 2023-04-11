@@ -47,4 +47,17 @@ export default class GameController {
       console.log((e as Error).message);
     }
   }
+
+  async handleGetGame(req: Request<{ id: number }>, res: Response): Promise<void> {
+    const id = req.params.id;
+
+    try {
+      const game =
+        (await this.gameRepository.findOne({ where: { id }, relations: { gameInfos: { player: true } } })) || {};
+
+      res.json(game);
+    } catch (e) {
+      console.error((e as any).message);
+    }
+  }
 }

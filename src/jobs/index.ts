@@ -63,7 +63,7 @@ export default class NHLCronManager {
 
       await this.gameController.saveGames(games);
     } catch (e) {
-      console.log(`Monitoring schedule failed:` + (e as Error).message);
+      appendFileSync("output.log", `Monitoring schedule failed:` + (e as Error).message);
     }
   }
 
@@ -93,7 +93,7 @@ export default class NHLCronManager {
       await this.playerController.savePlayers(players);
       this.gameController.ingestGameData(gameInfos);
     } catch (e) {
-      console.log(`Ingesting game-${id} failed:` + (e as Error).message);
+      appendFileSync("output.log", `Ingesting game-${id} failed:` + (e as Error).message);
     }
   }
 
