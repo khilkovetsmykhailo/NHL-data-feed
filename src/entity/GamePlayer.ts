@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import Player from "./Player";
 import Game from "./Game";
 
 @Entity("GamePlayer")
+@Index(["playerId", "gameId"], { unique: true })
 export default class GamePlayer {
   @PrimaryGeneratedColumn()
   id: number;
@@ -19,7 +20,7 @@ export default class GamePlayer {
   @Column()
   teamName: string;
 
-  @Column()
+  @Column({ nullable: true })
   assists: number;
 
   @Column()
@@ -31,13 +32,13 @@ export default class GamePlayer {
   @Column()
   playerAge: number;
 
-  @Column()
+  @Column({ nullable: true })
   goals: number;
 
-  @Column()
+  @Column({ nullable: true })
   points: number;
 
-  @Column()
+  @Column({ nullable: true })
   penaltyMinutes: number;
 
   @ManyToOne(() => Player, (player) => player.playerGames)
