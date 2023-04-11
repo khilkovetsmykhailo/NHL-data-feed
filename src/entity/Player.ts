@@ -10,5 +10,5 @@ export default class Player {
   name: string;
 
   @OneToMany(() => GamePlayer, (gamePlayer) => gamePlayer.player)
-  playerGames: GamePlayer[];
+  playerGames?: GamePlayer[];
 }

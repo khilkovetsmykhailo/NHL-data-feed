@@ -13,5 +13,5 @@ export default class Game {
   state: string;
 
   @OneToMany(() => GamePlayer, (gamePlayer) => gamePlayer.game, { nullable: true })
-  gameInfos: GamePlayer[];
+  gameInfos?: GamePlayer[];
 }

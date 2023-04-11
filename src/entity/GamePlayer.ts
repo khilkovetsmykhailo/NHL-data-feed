@@ -40,9 +40,6 @@ export default class GamePlayer {
   @Column()
   penaltyMinutes: number;
 
-  @Column("jsonb")
-  opponentTeam: { id: number; name: string };
-
   @ManyToOne(() => Player, (player) => player.playerGames)
   player: Player;
 
