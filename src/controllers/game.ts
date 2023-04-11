@@ -2,17 +2,27 @@ import { Request, Response } from "express";
 import { Repository, In } from "typeorm";
 import { AppDataSource } from "../data-source";
 import Game from "../entity/Game";
+import GamePlayer from "../entity/GamePlayer";
 
 export default class GameController {
   private gameRepository: Repository<Game> = AppDataSource.getRepository(Game);
+  private gamePlayerRepository: Repository<GamePlayer> = AppDataSource.getRepository(GamePlayer);
 
   constructor() {}
 
-  async saveGames(games: Game[]): Promise<void> {
+  async saveGames(games: Partial<Game>[]): Promise<void> {
     try {
       await this.gameRepository.save(games);
     } catch (e) {
-      console.log(e);
+      throw new Error("Saving games failed: " + (e as Error).message);
+    }
+  }
+
+  async ingestGameData(gameInfos: Partial<GamePlayer>[]): Promise<void> {
+    try {
+      await this.gamePlayerRepository.upsert(gameInfos, ["id"]);
+    } catch (e) {
+      throw new Error("Ingesting game info failed: " + (e as Error).message);
     }
   }
 
@@ -24,13 +34,17 @@ export default class GameController {
         return await this.gameRepository.find();
       }
     } catch (e) {
-      throw e;
+      throw new Error("Getting games failed: " + (e as Error).message);
     }
   }
 
   async handleGetGames(req: Request, res: Response): Promise<void> {
-    const games = await this.getGames();
+    try {
+      const games = await this.getGames();
 
-    res.json(games);
+      res.json(games);
+    } catch (e) {
+      console.log((e as Error).message);
+    }
   }
 }

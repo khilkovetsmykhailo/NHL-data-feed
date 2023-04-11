@@ -7,7 +7,8 @@ import Game from "../entity/Game";
 
 dotenv.config();
 
-const GET_SCHEDULE = process.env.GET_SCHEDULE || '"https://statsapi.web.nhl.com/api/v1/schedule/"';
+const GET_SCHEDULE = process.env.GET_SCHEDULE || "https://statsapi.web.nhl.com/api/v1/schedule/";
+const GET_GAME = process.env.GET_GAME || "https://statsapi.web.nhl.com/api/v1/game/ID/boxscore/";
 export default class NHLCronManager {
   private jobs: { [key: string]: CronJob } = {};
   private gameController: GameController;
@@ -46,8 +47,8 @@ export default class NHLCronManager {
           }
         }
 
-        if (currentState === "Live") {
-          this.addJob(`ingest-${game["gamePk"]}`, "*/2 * * * * *", this.ingestGame.bind(this, game["gamePk"]));
+        if (currentState === "Live" && !this.jobs[`ingest-${game["gamePk"]}`]) {
+          this.addJob(`ingest-${game["gamePk"]}`, "*/2 * * * * *", this.ingestGame.bind(this, game["gamePk"])); // Tried to check every second but looked like there was rate limit
           this.jobs[`ingest-${game["gamePk"]}`].start();
           appendFileSync("output.log", `Game ${game["gamePk"]} has started` + "\n");
         } else if (currentState === "Final") {
@@ -63,6 +64,29 @@ export default class NHLCronManager {
   }
 
   async ingestGame(id: string) {
+    try {
+      const { data } = await Axios.get(GET_GAME.replace("ID", id));
+
+      const gameInfos = [...data.teams.away.players, ...data.teams.home.players]
+        .filter((player) => player.position.code !== "N/A")
+        .map((player) => ({
+          playerId: player.person.id,
+          gameId: Number(id),
+          teamId: player.person.currentTeam.id,
+          teamName: player.person.currentTeam.name,
+          playerAge: player.person.currentAge,
+          playerNumber: player.jerseyNumber,
+          playerPosition: player.position.name,
+          assists: player.stats.skaterStats.assists,
+          goals: player.stats.skaterStats.goals,
+          points: player.stats.skaterStats.points,
+          penaltyMinutes: player.stats.skaterStats.penaltyMinutes,
+        }));
+
+      this.gameController.ingestGameData(gameInfos);
+    } catch (e) {
+      throw e;
+    }
   }
 
   private addJob(name: string, schedule: string, callback: () => void): void {

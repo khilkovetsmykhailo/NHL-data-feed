@@ -6,7 +6,7 @@ export default class Game {
   @PrimaryColumn()
   id: number;
 
-  @Column("date")
+  @Column("timestamp")
   date: string;
 
   @Column({ enum: ["Preview", "Live", "Final"] })
