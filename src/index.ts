@@ -36,6 +36,22 @@ AppDataSource.initialize()
       res.json(nhlJobManager.listJobs());
     });
 
+    app.get("/reload/season/:seasonId", (req, res) => {
+      const season = req.params.seasonId;
+
+      nhlJobManager.reloadSeason(season);
+
+      res.json("Reloading started");
+    });
+
+    app.get("/reload/game/:gameId", (req, res) => {
+      const game = req.params.gameId;
+
+      nhlJobManager.reloadGame(parseInt(game));
+
+      res.json("Reloading started");
+    });
+
     app.listen(port);
 
     console.log(`Express server has started on port ${port}.`);

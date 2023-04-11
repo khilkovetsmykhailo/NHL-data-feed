@@ -5,12 +5,13 @@ import { appendFileSync } from "fs";
 import GameController from "../controllers/game";
 import Game from "../entity/Game";
 import PlayerController from "../controllers/player";
-import { NHLGameInfoResponse, NHLScheduleResponse } from "./types";
+import { NHLGameInfoResponse, NHLScheduleResponse, NHLSeason } from "./types";
 
 dotenv.config();
 
 const GET_SCHEDULE = process.env.GET_SCHEDULE || "https://statsapi.web.nhl.com/api/v1/schedule/";
 const GET_GAME = process.env.GET_GAME || "https://statsapi.web.nhl.com/api/v1/game/ID/boxscore/";
+const GET_SEASONS = process.env.GET_SEASONS || "https://statsapi.web.nhl.com/api/v1/seasons";
 export default class NHLCronManager {
   private jobs: { [key: string]: CronJob } = {};
   private gameController: GameController;
@@ -48,7 +49,7 @@ export default class NHLCronManager {
         const jobName = `ingest-${game.id}`;
 
         if (currentState === "Live" && !this.jobs[jobName]) {
-          this.addJob(jobName, "*/10 * * * * *", this.ingestGame.bind(this, game.id)); // Tried to check every second but looked like there was rate limit
+          this.addJob(jobName, "*/10 * * * * *", this.ingestGame.bind(this, game.id));
           this.jobs[jobName].start();
           appendFileSync("output.log", `Game ${game.id} has started` + "\n");
         }
@@ -95,6 +96,36 @@ export default class NHLCronManager {
     } catch (e) {
       appendFileSync("output.log", `Ingesting game-${id} failed:` + (e as Error).message);
     }
+  }
+
+  async reloadSeason(season: string) {
+    try {
+      const { data: seasonData } = await Axios.get<{ seasons: NHLSeason[] }>(GET_SEASONS + season);
+
+      const { data: schedules } = await Axios.get<NHLScheduleResponse>(GET_SCHEDULE, {
+        params: {
+          startDate: seasonData.seasons[0].regularSeasonStartDate,
+          endDate: seasonData.seasons[0].seasonEndDate,
+        },
+      });
+
+      let games: Game[] = [];
+
+      for (let date of schedules.dates) {
+        for (let game of date.games) {
+          games.push({ id: game.gamePk, date: game.gameDate, state: game.status.abstractGameState });
+          this.ingestGame(game.gamePk);
+        }
+      }
+
+      this.gameController.saveGames(games);
+    } catch (e) {
+      appendFileSync("output.log", `Reloading season-${season} failed:` + (e as Error).message + "\n");
+    }
+  }
+
+  async reloadGame(id: number) {
+    this.ingestGame(id);
   }
 
   private addJob(name: string, schedule: string, callback: () => void): void {
