@@ -5,6 +5,7 @@ import { appendFileSync } from "fs";
 import GameController from "../controllers/game";
 import Game from "../entity/Game";
 import PlayerController from "../controllers/player";
+import { NHLGameInfoResponse, NHLScheduleResponse } from "./types";
 
 dotenv.config();
 
@@ -23,12 +24,12 @@ export default class NHLCronManager {
 
   async monitorSchedule() {
     try {
-      const { data } = await Axios.get(GET_SCHEDULE);
+      const { data } = await Axios.get<NHLScheduleResponse>(GET_SCHEDULE);
 
-      const games = data.dates.reduce((list: any, date: any) => {
+      const games = data.dates.reduce<Game[]>((list, date) => {
         return [
           ...list,
-          ...date.games.map(({ gamePk, gameDate, status: { abstractGameState } }: any) => ({
+          ...date.games.map(({ gamePk, gameDate, status: { abstractGameState } }) => ({
             id: gamePk,
             date: gameDate,
             state: abstractGameState,
@@ -37,7 +38,7 @@ export default class NHLCronManager {
       }, []);
 
       const prevGames: { [key: string]: Game } = (
-        await this.gameController.getGames(games.map((game: any) => game.gamePk))
+        await this.gameController.getGames(games.map((game) => game.id))
       ).reduce((gamesObj, game) => {
         return { ...gamesObj, [game.id]: game };
       }, {});
@@ -67,20 +68,20 @@ export default class NHLCronManager {
     }
   }
 
-  async ingestGame(id: string) {
+  async ingestGame(id: number) {
     try {
-      const { data } = await Axios.get(GET_GAME.replace("ID", id));
+      const { data } = await Axios.get<NHLGameInfoResponse>(GET_GAME.replace("ID", id.toString()));
 
-      const gameInfos = Object.values<any>({ ...data.teams.away.players, ...data.teams.home.players })
+      const gameInfos = Object.values({ ...data.teams.away.players, ...data.teams.home.players })
         .filter((player) => player.position.code !== "N/A")
         .map((player) => ({
           player: { id: player.person.id, name: player.person.fullName },
           playerId: player.person.id,
-          gameId: Number(id),
+          gameId: id,
           teamId: player.person.currentTeam.id,
           teamName: player.person.currentTeam.name,
           playerAge: player.person.currentAge,
-          playerNumber: player.jerseyNumber,
+          playerNumber: Number(player.jerseyNumber),
           playerPosition: player.position.name,
           assists: player.stats?.skaterStats?.assists,
           goals: player.stats?.skaterStats?.goals,
