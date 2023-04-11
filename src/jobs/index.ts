@@ -25,8 +25,9 @@ export default class NHLCronManager {
 
   async monitorSchedule() {
     try {
-      const { data } = await Axios.get<NHLScheduleResponse>(GET_SCHEDULE);
+      const res = await Axios.get<NHLScheduleResponse>(GET_SCHEDULE);
 
+      const data = res.data;
       const games = data.dates.reduce<Game[]>((list, date) => {
         return [
           ...list,
@@ -49,7 +50,7 @@ export default class NHLCronManager {
         const jobName = `ingest-${game.id}`;
 
         if (currentState === "Live" && !this.jobs[jobName]) {
-          this.addJob(jobName, "*/10 * * * * *", this.ingestGame.bind(this, game.id));
+          this.addJob(jobName, "*/5 * * * * *", this.ingestGame.bind(this, game.id));
           this.jobs[jobName].start();
           appendFileSync("output.log", `Game ${game.id} has started` + "\n");
         }
