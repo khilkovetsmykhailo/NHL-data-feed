@@ -12,7 +12,7 @@ export default class GameController {
 
   async saveGames(games: Partial<Game>[]): Promise<void> {
     try {
-      await this.gameRepository.save(games);
+      await this.gameRepository.upsert(games, ["id"]);
     } catch (e) {
       throw new Error("Saving games failed: " + (e as Error).message);
     }
@@ -20,7 +20,7 @@ export default class GameController {
 
   async ingestGameData(gameInfos: Partial<GamePlayer>[]): Promise<void> {
     try {
-      await this.gamePlayerRepository.upsert(gameInfos, ["id"]);
+      await this.gamePlayerRepository.upsert(gameInfos, ["playerId", "gameId"]);
     } catch (e) {
       throw new Error("Ingesting game info failed: " + (e as Error).message);
     }
